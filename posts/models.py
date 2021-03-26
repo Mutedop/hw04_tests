@@ -2,7 +2,6 @@ import textwrap
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from pytils.translit import slugify
 
 User = get_user_model()
 
@@ -31,11 +30,6 @@ class Group(models.Model):
 
     def __str__(self):
         return textwrap.shorten(self.title, 15)
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)[:100]
-        super().save(*args, **kwargs)
 
 
 class Post(models.Model):
