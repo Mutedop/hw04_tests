@@ -1,4 +1,3 @@
-from posts.forms import PostForm
 from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -21,19 +20,22 @@ class PagesTest(TestCase):
             slug='test-slug',
             description='Описание',
         )
+        cls.group_two = Group.objects.create(
+            title='Название 2',
+            slug='test-slug-two',
+            description='Описание 2',
+        )
         cls.post = Post.objects.create(
-            id=1,
+            id=123,
             text='Текст поста',
             group=cls.group,
             author=cls.author_post,
         )
-        for post in range(12):
-            Post.objects.create(
-                text=f'Текст поста {post}',
-                author=cls.author_post,
-                group=cls.group,
-            )
-        cls.form = PostForm()
+        posts_items = [Post(
+            text=f'Пост № {number_post}',
+            author=cls.author_post,
+            group=cls.group) for number_post in range(13)]
+        Post.objects.bulk_create(posts_items)
 
     def setUp(self) -> User:
         self.user = User.objects.create_user(username='Tester')
@@ -41,14 +43,22 @@ class PagesTest(TestCase):
         self.authorized_client.force_login(self.user)
 
     def test_pages_use_correct_template(self):
-        """Try using reverse for names."""
+        """Try using reverse for names.
+        I check the work args & kwargs for r_name, url's
+        """
+
         template_pages = {
             'new.html': reverse('new_post'),
+            'post.html': (reverse('post',
+                          kwargs={'username': 'AuthorPost',
+                                  'post_id': '123'})),
             'index.html': reverse('index'),
-            'group.html': reverse(
-                'group_post',
-                kwargs={'slug': 'test-slug'}),
+            'group.html': (reverse('group_post',
+                           args={'test-slug'})),
+            'profile.html': (reverse('profile',
+                             args={'Tester'})),
         }
+
         for template, reverse_name in template_pages.items():
             with self.subTest(template=template):
                 response = (self.authorized_client.
@@ -119,3 +129,36 @@ class PagesTest(TestCase):
             text='Создаем пост для сущ. группы',
             group=PagesTest.group.id
         ).exists())
+        # self.assertFalse(Post.objects.filter(
+        #     text='Создаем пост для сущ. группы',
+        #     group=PagesTest.group_two.id
+        # ).exists())
+
+    def test_post_edit_correct_context(self):
+        response = PagesTest.author_client.get(
+            reverse('post_edit',
+                    kwargs={
+                        'username': 'AuthorPost',
+                        'post_id': '123'
+                    })
+        )
+        form_fields = {
+            'text': forms.fields.CharField,
+            'group': forms.fields.ChoiceField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_field = response.context['form'].fields[value]
+                self.assertIsInstance(form_field, expected)
+
+    def test_profile_correct_context(self):
+        response = self.authorized_client.get(
+            reverse('profile', args={'AuthorPost'})
+        )
+        post_object = response.context['page'][0]
+        post_author_0 = post_object.author
+        post_text_0 = post_object.text
+        self.assertEqual(post_author_0,
+                         PagesTest.post.author)
+        self.assertEqual(post_text_0,
+                         PagesTest.post.text)

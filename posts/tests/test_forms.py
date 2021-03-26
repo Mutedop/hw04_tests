@@ -12,15 +12,20 @@ class PostFormTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        cls.user_author = User.objects.create_user(username='AuthorPost')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.user_author)
+
         cls.group = Group.objects.create(
             title='Название',
             slug='test-slug',
             description='Описание',
         )
         cls.post = Post.objects.create(
+            id=123,
             text='Текст поста',
             group=cls.group,
-            author=User.objects.create(username='author post'),
+            author=cls.user_author,
         )
 
     def setUp(self):
@@ -38,7 +43,6 @@ class PostFormTest(TestCase):
 
         posts_count = Post.objects.count()
         form_data = {
-            # 'title': 'Заголовок из формы',
             'text': 'Тестовый пост для проверки count',
         }
         response = self.authorized_client.post(
@@ -48,3 +52,29 @@ class PostFormTest(TestCase):
         )
         self.assertNotEqual(Post.objects.count(), posts_count)
         self.assertEqual(response.status_code, 200)
+
+    def test_post_edit_form(self):
+        """Make sure that when you edit a post through the form on the
+        post edit page, the corresponding record in the database is changed.
+        """
+
+        post_count = Post.objects.count()
+        form_data = {
+            'text': 'Проверить изменение поста',
+            'group': PostFormTest.group.id,
+        }
+        response = PostFormTest.author_client.post(reverse(
+            'post_edit',
+            kwargs={'username': 'AuthorPost', 'post_id': '123'}),
+            data=form_data,
+            follow=False,
+        )
+        self.assertRedirects(response, reverse(
+            'post', kwargs={'username': 'AuthorPost', 'post_id': '123'}))
+        self.assertEqual(Post.objects.count(), post_count)
+        self.assertTrue(
+            Post.objects.filter(
+                text='Проверить изменение поста',
+                group=PostFormTest.group.id
+            ).exists()
+        )

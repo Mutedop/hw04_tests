@@ -45,22 +45,22 @@ def new_post(request):
 
 
 def post_edit(request, username, post_id):
-    post = get_object_or_404(Post, author__username=username, id=post_id) # author__username=username
+    post = get_object_or_404(Post, author__username=username, id=post_id)
 
     is_edit = True
 
     if request.user != post.author:
-        return redirect('post', username, post_id)
-        # return redirect('post', username=username, post_id=post.id)
+        # return redirect('post', username, post_id)
+        return redirect('post', username=username, post_id=post.id)
 
-    form = PostForm(request.POST or None, instance=post) # or None for req.POST
+    form = PostForm(request.POST or None, instance=post)
 
     if request.method == 'POST':
         form = PostForm(request.POST, instance=post)
         if form.is_valid():
             form.save()
-            return redirect('post', username, post_id)
-            # return redirect('post', username=username, post_id=post.id)
+            # return redirect('post', username, post_id)
+            return redirect('post', username=username, post_id=post.id)
     return render(
         request,
         'new.html',
