@@ -26,7 +26,7 @@ class Group(models.Model):
     )
     description = models.TextField(
         verbose_name='Описание',
-        help_text='Группы описания текстЪ',
+        help_text='Группы описания',
     )
 
     def __str__(self):

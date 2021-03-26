@@ -120,7 +120,7 @@ class PagesTest(TestCase):
         }
         response = self.authorized_client.post(
             reverse('new_post'),
-            date=date_field,
+            data=date_field,
             follow=True
         )
         self.assertNotEqual(Post.objects.count(), post_count)
@@ -129,10 +129,10 @@ class PagesTest(TestCase):
             text='Создаем пост для сущ. группы',
             group=PagesTest.group.id
         ).exists())
-        # self.assertFalse(Post.objects.filter(
-        #     text='Создаем пост для сущ. группы',
-        #     group=PagesTest.group_two.id
-        # ).exists())
+        self.assertFalse(Post.objects.filter(
+            text='Создаем пост для сущ. группы',
+            group=PagesTest.group_two.id
+        ).exists())
 
     def test_post_edit_correct_context(self):
         response = PagesTest.author_client.get(
