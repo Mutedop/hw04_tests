@@ -7,14 +7,14 @@ from posts.models import Group, Post, User
 
 
 def index(request):
-    latest = Post.objects.get_queryset().order_by('id')
+    latest = Post.objects.all().order_by('id')
     paginator = Paginator(latest, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
         request,
         'index.html',
-        {'page': page, 'paginator': paginator},
+        {'page': page},
     )
 
 
@@ -27,7 +27,7 @@ def group_posts(request, slug):
     return render(
         request,
         'group.html',
-        {'group': group, 'page': page, 'paginator': paginator}
+        {'group': group, 'page': page}
     )
 
 
@@ -80,7 +80,7 @@ def profile(request, username):
     page = paginator.get_page(page_number)
     context = {'author': user,
                'page': page,
-               'paginator': paginator}
+    }
     return render(request, 'profile.html', context)
 
 
