@@ -59,7 +59,6 @@ def post_edit(request, username, post_id):
         'new.html',
         {'form': form, 'post': post, 'is_edit': True})
 
-
 def card_user(request, username):
     post_author = User.objects.get(username=username)
     user_posts = Post.objects.all().filter(author=post_author)
@@ -71,10 +70,9 @@ def card_user(request, username):
     }
     return render(request, 'card_user.html', context)
 
-
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    posts = Post.objects.get_queryset().filter(author=user).order_by('id')
+    posts = Post.objects.all().filter(author=user).order_by('id')
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -82,7 +80,6 @@ def profile(request, username):
                'page': page,
     }
     return render(request, 'profile.html', context)
-
 
 def post_view(request, username, post_id):
     user = get_object_or_404(User, username=username)
