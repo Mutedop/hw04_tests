@@ -34,7 +34,7 @@ class PagesTest(TestCase):
         posts_items = [Post(
             text=f'Пост № {number_post}',
             author=cls.author_post,
-            group=cls.group) for number_post in range(13)]
+            group=cls.group) for number_post in range(12)]
         Post.objects.bulk_create(posts_items)
 
     def setUp(self) -> User:
