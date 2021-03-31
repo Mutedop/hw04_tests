@@ -44,13 +44,13 @@ class YatubeUrlTests(TestCase):
         self.templates_url_names = {
             'new.html': '/new/',
             'post.html': (f'/{YatubeUrlTests.post.author}/'
-                         f'{YatubeUrlTests.post.id}/'),
+                          f'{YatubeUrlTests.post.id}/'),
             'index.html': '/',
             'group.html': f'/group/{YatubeUrlTests.group.slug}/',
             'profile.html': f'/{YatubeUrlTests.post.author}/'
         }
 
-    def test_urls_staus_code(self):
+    def test_urls_status_code(self):
         for template, reverse_name in self.templates_url_names.items():
             with self.subTest(template=template):
                 response = self.authorized_client.get(reverse_name)

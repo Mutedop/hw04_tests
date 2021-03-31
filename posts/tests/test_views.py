@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -120,18 +119,16 @@ class PagesTest(TestCase):
             group=PagesTest.group_two
         ).count()
         post_count = Post.objects.count()
-        
         date_field = {
             'text': 'Создаем пост для сущ. группы',
             'group': PagesTest.group.id
         }
-        
         response = self.authorized_client.post(
             reverse('new_post'),
             data=date_field,
             follow=True
         )
-        
+
         # Checked the appearance of the created post.
         self.assertNotEqual(Post.objects.count(), post_count)
         # I checked that after the creation they went to the main page.
