@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Profile{% endblock %}
 {% block content %}
-<main role="main" class="container">
-  <div class="row">
-    <div class="col-md-3 mb-3 mt-1">
-      {% include "card_user.html" %}
-      <div class="col-md-9">
-        {% include "one_post.html" %}
-        <p class="card-text">
-          {%for post in page%}
-            <a href="{% url 'profile' author %}">
-              <strong class="d-block text-gray-dark">
-                @{{ author.username }}
-              </strong>
-            </a>
-            <a href="{% url 'post' post.author post.id %}" style="color:#000000; text-decoration:none">
-              {{ post.text|linebreaksbr }}
-            </a>
-            <hr>
-          {%endfor%}
-        </p>
-        {% include "paginator.html" %}
+  <main role="main" class="container">
+    <div class="row">
+      <div class="col-md-3 mb-3 mt-1">
+        {% include "includes/card_user.html" %}
+        <div class="col-md-9">
+          {% include "includes/one_post.html" %}
+          <p class="card-text">
+            {%for post in page%}
+              <a href="{% url 'profile' author %}">
+                <strong class="d-block text-gray-dark">
+                  @{{ author.username }}
+                </strong>
+              </a>
+              <a href="{% url 'post' post.author post.id %}" style="color:#000000; text-decoration:none">
+                {{ post.text|linebreaksbr }}
+              </a>
+              <hr>
+            {%endfor%}
+          </p>
+          {% include "includes/paginator.html" %}
+        </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 {% endblock %}

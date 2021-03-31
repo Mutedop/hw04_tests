@@ -7,7 +7,7 @@ from posts.models import Group, Post, User
 
 
 def index(request):
-    latest = Post.objects.all().order_by('id')
+    latest = Post.objects.all()
     paginator = Paginator(latest, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -20,7 +20,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.get_queryset().order_by('id')
+    posts = group.posts.all()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -62,7 +62,7 @@ def post_edit(request, username, post_id):
 
 def card_user(request, username):
     post_author = User.objects.get(username=username)
-    user_posts = Post.objects.all().filter(author=post_author)
+    user_posts = post_author.post
     posts_count = post_author.posts.count()
     context = {
         'author': post_author,
@@ -74,7 +74,7 @@ def card_user(request, username):
 
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    posts = Post.objects.all().filter(author=user).order_by('id')
+    posts = Post.objects.all().filter(author=user)
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -83,12 +83,9 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    user = get_object_or_404(User, username=username)
-    post = get_object_or_404(
-        Post.objects.select_related('author').filter(id=post_id)
-    )
+    post = get_object_or_404(Post, author__username=username, id=post_id)
     context = {
-        'author': user,
+        'author': post.author,
         'post': post,
     }
     return render(request, 'post.html', context)

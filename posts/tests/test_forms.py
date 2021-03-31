@@ -2,9 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
-
-User = get_user_model()
+from posts.models import Group, Post, User
 
 
 class PostFormTest(TestCase):
@@ -22,7 +20,6 @@ class PostFormTest(TestCase):
             description='Описание',
         )
         cls.post = Post.objects.create(
-            id=123,
             text='Текст поста',
             group=cls.group,
             author=cls.user_author,
@@ -65,16 +62,23 @@ class PostFormTest(TestCase):
         }
         response = PostFormTest.author_client.post(reverse(
             'post_edit',
-            kwargs={'username': 'AuthorPost', 'post_id': '123'}),
+            kwargs={
+                'username': PostFormTest.post.author,
+                'post_id': PostFormTest.post.id
+            }),
             data=form_data,
             follow=False,
         )
         self.assertRedirects(response, reverse(
-            'post', kwargs={'username': 'AuthorPost', 'post_id': '123'}))
+            'post',
+            kwargs={
+                'username': PostFormTest.post.author,
+                'post_id': PostFormTest.post.id
+            }))
         self.assertEqual(Post.objects.count(), post_count)
         self.assertTrue(
             Post.objects.filter(
-                text='Проверить изменение поста',
+                text=form_data['text'],
                 group=PostFormTest.group.id
             ).exists()
         )

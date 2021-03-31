@@ -3,9 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
-
-User = get_user_model()
+from posts.models import Group, Post, User
 
 
 class PagesTest(TestCase):
@@ -110,29 +108,52 @@ class PagesTest(TestCase):
 
     def test_create_post_on_view(self):
         """Check that if you specify a group when creating a post,
-        then this post appears. On the home page of the site.
+        then this post appears on the main page of the site,
+        on the page of the selected group.
+        Make sure this post is not in a group it was not intended for.
         """
 
+        posts_count_group = Post.objects.filter(
+            group=PagesTest.group
+        ).count()
+        posts_count_group_two = Post.objects.filter(
+            group=PagesTest.group_two
+        ).count()
         post_count = Post.objects.count()
+        
         date_field = {
             'text': 'Создаем пост для сущ. группы',
             'group': PagesTest.group.id
         }
+        
         response = self.authorized_client.post(
             reverse('new_post'),
             data=date_field,
             follow=True
         )
+        
+        # Checked the appearance of the created post.
         self.assertNotEqual(Post.objects.count(), post_count)
+        # I checked that after the creation they went to the main page.
         self.assertRedirects(response, reverse('index'))
+        # I checked the create text field that the post is in the group 1.
         self.assertTrue(Post.objects.filter(
             text='Создаем пост для сущ. группы',
             group=PagesTest.group.id
         ).exists())
+        # Compare the number of posts in group one.
+        self.assertNotEqual(Post.objects.filter(
+            group=PagesTest.group).count(), posts_count_group
+        )
+        # I checked the text field that the post is in the group_two 2.
         self.assertFalse(Post.objects.filter(
             text='Создаем пост для сущ. группы',
             group=PagesTest.group_two.id
         ).exists())
+        # Compare the number of posts in group 2.
+        self.assertEqual(Post.objects.filter(
+            group=PagesTest.group_two).count(), posts_count_group_two
+        )
 
     def test_post_edit_correct_context(self):
         response = PagesTest.author_client.get(

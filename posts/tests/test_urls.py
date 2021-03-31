@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-from django.urls import reverse
 
 from posts.models import Group, Post
 
@@ -28,7 +27,6 @@ class YatubeUrlTests(TestCase):
             description='Описание',
         )
         cls.post = Post.objects.create(
-            id=123,
             text='Текст поста',
             group=cls.group,
             author=cls.author_post,
@@ -44,15 +42,12 @@ class YatubeUrlTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.templates_url_names = {
-            'new.html': reverse('new_post'),
-            'post.html': (reverse('post',
-                          kwargs={'username': 'AuthorPost',
-                                  'post_id': '123'})),
-            'index.html': reverse('index'),
-            'group.html': (reverse('group_post',
-                           kwargs={'slug': 'test-slug'})),
-            'profile.html': (reverse('profile',
-                             kwargs={'username': 'authUser'})),
+            'new.html': '/new/',
+            'post.html': (f'/{YatubeUrlTests.post.author}/'
+                         f'{YatubeUrlTests.post.id}/'),
+            'index.html': '/',
+            'group.html': f'/group/{YatubeUrlTests.group.slug}/',
+            'profile.html': f'/{YatubeUrlTests.post.author}/'
         }
 
     def test_urls_staus_code(self):
@@ -72,23 +67,29 @@ class YatubeUrlTests(TestCase):
         self.assertRedirects(response, '/auth/login/?next=/new/')
 
     def test_url_post_edit_redirect_guest_on_post(self):
-        response = self.guest_client.get(reverse(
-            'post_edit',
-            kwargs={'username': 'AuthorPost', 'post_id': '123'}
-        ))
-        self.assertRedirects(response, '/AuthorPost/123/')
+        response = self.guest_client.get(
+            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/edit/',
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/'
+        )
 
     def test_url_post_edit_redirect_authorized_client_on_post(self):
-        response = self.authorized_client.get(reverse(
-            'post_edit',
-            kwargs={'username': 'AuthorPost', 'post_id': '123'}
-        ))
-        self.assertRedirects(response, '/AuthorPost/123/')
+        response = self.authorized_client.get(
+            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/edit/',
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/'
+        )
 
     def test_url_post_edit_available_for_author(self):
-        response = YatubeUrlTests.author_client.get(reverse(
-            'post_edit',
-            kwargs={'username': 'AuthorPost', 'post_id': '123'}
-        ))
+        response = YatubeUrlTests.author_client.get(
+            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/edit/',
+            follow=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'new.html')
