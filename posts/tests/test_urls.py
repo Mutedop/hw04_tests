@@ -73,7 +73,8 @@ class YatubeUrlTests(TestCase):
         )
         self.assertRedirects(
             response,
-            f'/{YatubeUrlTests.post.author}/{YatubeUrlTests.post.id}/'
+            f'/auth/login/?next=/{YatubeUrlTests.post.author}/'
+            f'{YatubeUrlTests.post.id}/edit/'
         )
 
     def test_url_post_edit_redirect_authorized_client_on_post(self):

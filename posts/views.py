@@ -44,6 +44,7 @@ def new_post(request):
     return render(request, 'new.html', {'form': form})
 
 
+@login_required
 def post_edit(request, username, post_id):
     post = get_object_or_404(Post, author__username=username, id=post_id)
     if request.user != post.author:
@@ -60,21 +61,9 @@ def post_edit(request, username, post_id):
         {'form': form, 'post': post, 'is_edit': True})
 
 
-def card_user(request, username):
-    post_author = User.objects.get(username=username)
-    user_posts = post_author.post
-    posts_count = post_author.posts.count()
-    context = {
-        'author': post_author,
-        'post': user_posts,
-        'posts_count': posts_count,
-    }
-    return render(request, 'card_user.html', context)
-
-
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    posts = Post.objects.all().filter(author=user)
+    posts = user.posts.all()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
